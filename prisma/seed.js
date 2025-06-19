@@ -1,7 +1,7 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
 async function main() {
     // Create sample categories
     const computerAndLaptops = await prisma.category.create({
@@ -54,7 +54,6 @@ async function main() {
             parentID: null, // Top-level category
         },
     });
-
     // --- Create new Categories ---
     // Smartphones Category
     await prisma.category.create({
@@ -66,7 +65,6 @@ async function main() {
             parentID: null,
         },
     });
-
     // Audio Category and its Sub-categories
     const audioCategory = await prisma.category.create({
         data: {
@@ -95,7 +93,6 @@ async function main() {
             parentID: audioCategory.id,
         },
     });
-
     // Gaming Category and its Sub-categories
     const gamingCategory = await prisma.category.create({
         data: {
@@ -125,7 +122,6 @@ async function main() {
         },
     });
     // --- End of new Categories ---
-
     // Create OptionSets
     const colorOptionSet = await prisma.optionSet.create({
         data: {
@@ -141,7 +137,6 @@ async function main() {
             ],
         },
     });
-
     const sizeOptionSet = await prisma.optionSet.create({
         data: {
             id: 'size',
@@ -154,7 +149,6 @@ async function main() {
             ],
         },
     });
-
     // Link OptionSets to Category
     await prisma.category_OptionSet.createMany({
         data: [
@@ -168,15 +162,13 @@ async function main() {
             },
         ],
     });
-
     // Create sample brands
-    const brandFashionCo = await prisma.brand.create({ // Renamed variable for clarity
+    const brandFashionCo = await prisma.brand.create({
         data: {
             id: 'brand123', // Keeping existing ID
             name: 'FashionCo',
         },
     });
-
     // --- Create new Brands ---
     await prisma.brand.createMany({
         data: [
@@ -189,53 +181,54 @@ async function main() {
         skipDuplicates: true, // In case some are added manually or in previous runs
     });
     // --- End of new Brands ---
-
     // --- Fetch all necessary data for product creation ---
     console.log('Fetching existing data for product creation...');
     const allBrands = await prisma.brand.findMany();
     const allCategories = await prisma.category.findMany();
     // const allOptionSets = await prisma.optionSet.findMany(); // Already have colorOptionSet and sizeOptionSet by ID
-
     // Helper to find category by name (more robust than assuming order or hardcoding IDs for new cats)
-    const findCategory = (name: string) => allCategories.find(cat => cat.name === name);
-    const findBrand = (name: string) => allBrands.find(brand => brand.name === name);
-
+    const findCategory = (name) => allCategories.find(cat => cat.name === name);
+    const findBrand = (name) => allBrands.find(brand => brand.name === name);
     // Specific categories needed for products (ensure they are found)
     const smartphonesCat = findCategory('Smartphones');
     const laptopsCat = findCategory('Laptops'); // This is the newly created "Laptops"
     const headphonesCat = findCategory('Headphones');
     const consolesCat = findCategory('Consoles');
     const monitorsCat = findCategory('Monitors'); // This is the newly created "Monitors"
-
     if (!smartphonesCat || !laptopsCat || !headphonesCat || !consolesCat || !monitorsCat) {
         console.error('One or more categories required for products were not found. Exiting.');
         // Log which ones are missing
-        if (!smartphonesCat) console.error('Smartphones category missing');
-        if (!laptopsCat) console.error('Laptops category missing');
-        if (!headphonesCat) console.error('Headphones category missing');
-        if (!consolesCat) console.error('Consoles category missing');
-        if (!monitorsCat) console.error('Monitors category missing');
+        if (!smartphonesCat)
+            console.error('Smartphones category missing');
+        if (!laptopsCat)
+            console.error('Laptops category missing');
+        if (!headphonesCat)
+            console.error('Headphones category missing');
+        if (!consolesCat)
+            console.error('Consoles category missing');
+        if (!monitorsCat)
+            console.error('Monitors category missing');
         process.exit(1);
     }
-
     // Specific brands needed
     const samsungBrand = findBrand('Samsung');
     const appleBrand = findBrand('Apple');
     const sonyBrand = findBrand('Sony');
     const dellBrand = findBrand('Dell');
-
     if (!samsungBrand || !appleBrand || !sonyBrand || !dellBrand) {
         console.error('One or more brands required for products were not found. Exiting.');
         // Log which ones are missing
-        if(!samsungBrand) console.error('Samsung brand missing');
-        if(!appleBrand) console.error('Apple brand missing');
-        if(!sonyBrand) console.error('Sony brand missing');
-        if(!dellBrand) console.error('Dell brand missing');
+        if (!samsungBrand)
+            console.error('Samsung brand missing');
+        if (!appleBrand)
+            console.error('Apple brand missing');
+        if (!sonyBrand)
+            console.error('Sony brand missing');
+        if (!dellBrand)
+            console.error('Dell brand missing');
         process.exit(1);
     }
-
     // --- End of fetching data ---
-
     // --- Prepare Product Data ---
     const productData = [
         // Product 1: Smartphone
@@ -305,7 +298,6 @@ async function main() {
         },
     ];
     // --- End of Prepare Product Data ---
-
     // --- Create New Products ---
     console.log(`Creating ${productData.length} new products...`);
     await prisma.product.createMany({
@@ -314,7 +306,6 @@ async function main() {
     });
     console.log('New products created!');
     // --- End of Create New Products ---
-
     // --- Create SpecGroups ---
     console.log('Creating SpecGroups...');
     const specGroupData = [
@@ -329,26 +320,26 @@ async function main() {
     });
     console.log('SpecGroups created!');
     // --- End of Create SpecGroups ---
-
     // --- Fetch SpecGroups for linking ---
     const allSpecGroups = await prisma.specGroup.findMany();
-    const findSpecGroup = (title: string) => allSpecGroups.find(sg => sg.title === title);
-
+    const findSpecGroup = (title) => allSpecGroups.find(sg => sg.title === title);
     const generalSpecGroup = findSpecGroup("General Device Specifications");
     const displaySpecGroup = findSpecGroup("Display Specifications");
     const performanceSpecGroup = findSpecGroup("Performance Specifications");
     const connectivitySpecGroup = findSpecGroup("Connectivity");
-
     if (!generalSpecGroup || !displaySpecGroup || !performanceSpecGroup || !connectivitySpecGroup) {
         console.error('One or more SpecGroups required for linking were not found. Exiting.');
-        if(!generalSpecGroup) console.error('General Device Specifications missing');
-        if(!displaySpecGroup) console.error('Display Specifications missing');
-        if(!performanceSpecGroup) console.error('Performance Specifications missing');
-        if(!connectivitySpecGroup) console.error('Connectivity missing');
+        if (!generalSpecGroup)
+            console.error('General Device Specifications missing');
+        if (!displaySpecGroup)
+            console.error('Display Specifications missing');
+        if (!performanceSpecGroup)
+            console.error('Performance Specifications missing');
+        if (!connectivitySpecGroup)
+            console.error('Connectivity missing');
         process.exit(1);
     }
     // --- End of Fetch SpecGroups ---
-
     // --- Create Category_SpecGroup Linkages ---
     console.log('Linking SpecGroups to Categories...');
     const categorySpecGroupData = [
@@ -357,35 +348,28 @@ async function main() {
         { categoryID: laptopsCat.id, specGroupID: displaySpecGroup.id },
         { categoryID: laptopsCat.id, specGroupID: performanceSpecGroup.id },
         { categoryID: laptopsCat.id, specGroupID: connectivitySpecGroup.id },
-
         // Smartphones: General, Display, Performance, Connectivity
         { categoryID: smartphonesCat.id, specGroupID: generalSpecGroup.id },
         { categoryID: smartphonesCat.id, specGroupID: displaySpecGroup.id },
         { categoryID: smartphonesCat.id, specGroupID: performanceSpecGroup.id },
         { categoryID: smartphonesCat.id, specGroupID: connectivitySpecGroup.id },
-
         // Monitors: Display, Connectivity
         { categoryID: monitorsCat.id, specGroupID: displaySpecGroup.id },
         { categoryID: monitorsCat.id, specGroupID: connectivitySpecGroup.id },
     ];
-
     await prisma.category_SpecGroup.createMany({
         data: categorySpecGroupData,
         skipDuplicates: true,
     });
     console.log('SpecGroups linked to Categories!');
     // --- End of Create Category_SpecGroup Linkages ---
-
     // --- Create PageVisit Data ---
     console.log('Creating PageVisit data...');
     const allProducts = await prisma.product.findMany();
-
     const product1 = allProducts.find(p => p.name === "Galaxy S23");
     const product2 = allProducts.find(p => p.name === "MacBook Air M2");
     const product3 = allProducts.find(p => p.name === "WH-1000XM5 Noise Cancelling Headphones");
-
     const pageVisitData = [];
-
     // Ensure products were found before creating visits for them
     if (product1) {
         pageVisitData.push({
@@ -421,7 +405,6 @@ async function main() {
             time: new Date(Date.now() - Math.random() * 100000000),
         });
     }
-
     // LIST type visits
     pageVisitData.push({
         pageType: 'LIST',
@@ -441,7 +424,6 @@ async function main() {
         deviceResolution: '1366x768',
         time: new Date(Date.now() - Math.random() * 100000000),
     });
-
     // MAIN type visits
     pageVisitData.push({
         pageType: 'MAIN',
@@ -461,21 +443,19 @@ async function main() {
         deviceResolution: '1366x768',
         time: new Date(Date.now() - Math.random() * 100000000),
     });
-
     if (pageVisitData.length > 0) {
         await prisma.pageVisit.createMany({
             data: pageVisitData,
             skipDuplicates: true,
         });
         console.log(`${pageVisitData.length} PageVisit records created!`);
-    } else {
+    }
+    else {
         console.log('No PageVisit records to create (possibly due to products not found).');
     }
     // --- End of Create PageVisit Data ---
-
     // --- Create Users and Accounts ---
     console.log('Creating Users and Accounts...');
-
     // User 1: Alice
     const aliceUser = await prisma.user.create({
         data: {
@@ -495,7 +475,6 @@ async function main() {
         },
     });
     console.log(`Created User: ${aliceUser.name} with ID: ${aliceUser.id} and linked Account.`);
-
     // User 2: Bob
     const bobUser = await prisma.user.create({
         data: {
@@ -515,21 +494,17 @@ async function main() {
         },
     });
     console.log(`Created User: ${bobUser.name} with ID: ${bobUser.id} and linked Account.`);
-
     console.log('Users and Accounts created!');
     // --- End of Create Users and Accounts ---
-
     // Note: Removed old single product creation and its page visit.
     // If page visits are needed for new products, they should be added here.
-
     console.log('Seed script finished successfully!');
 }
-
 main()
     .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
+    console.error(e);
+    process.exit(1);
+})
     .finally(async () => {
-        await prisma.$disconnect();
-    });
+    await prisma.$disconnect();
+});
