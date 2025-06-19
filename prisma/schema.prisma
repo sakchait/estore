@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id       String   @id @default(uuid())
+  parentID String?
+
+  name               String
+  url                String
+  iconUrl            String?
+  iconSize           Int[]
+  Category_Option    Category_OptionSet[]
+  Category_SpecGroup Category_SpecGroup[]
+  products           Product[]
+}
+
+model Category_OptionSet {
+  id String @id @default(uuid())
+
+  option     OptionSet @relation(fields: [optionID], references: [id], onDelete: Cascade)
+  optionID   String
+  category   Category  @relation(fields: [categoryID], references: [id])
+  categoryID String
+
+  @@unique([optionID, categoryID])
+}
+
+model OptionSet {
+  id              String               @id @default(uuid())
+  name            String
+  options         Json          // Store NameValue[] as JSON
+  type            OptionSetType
+  Category_Option Category_OptionSet[]
+}
+
+//model NameValue {
+//  name  String
+//  value String
+//}
+
+// Flattening NameValue is required in PostgreSQL (no embedded types), so store it as JSON or separate table.
+// Here we assume JSON type with `@db.Json` on OptionSet.options
+
+model Category_SpecGroup {
+  id String @id @default(uuid())
+
+  specGroup   SpecGroup @relation(fields: [specGroupID], references: [id], onDelete: Cascade)
+  specGroupID String
+  category    Category  @relation(fields: [categoryID], references: [id])
+  categoryID  String
+
+  @@unique([specGroupID, categoryID])
+}
+
+model SpecGroup {
+  id                 String               @id @default(uuid())
+  title              String
+  specs              String[]         
+  Category_SpecGroup Category_SpecGroup[]
+}
+
+enum OptionSetType {
+  TEXT
+  COLOR
+}
+
+model Product {
+  id              String        @id @default(uuid())
+  name            String
+  isAvailable     Boolean       @default(true)
+  desc            String?
+  specialFeatures String[]
+  images          String[]
+  category        Category      @relation(fields: [categoryID], references: [id])
+  categoryID      String
+  optionSets      String[]      // assuming UUID references, but not normalized
+  price           Float
+  salePrice       Float?
+  specs           Json          // Store ProductSpec[] as JSON
+  brand           Brand         @relation(fields: [brandID], references: [id])
+  brandID         String
+  PageVisit       PageVisit[]
+}
+
+//model ProductSpec {
+//  specGroupID String
+//  specValues  String[]
+//}
+
+// Flattened ProductSpec to JSON via `@db.Json` on `specs` in Product
+
+model Brand {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  products Product[]
+}
+
+model PageVisit {
+  id               String    @id @default(uuid())
+  time             DateTime? @default(now())
+  pageType         PageType
+  pagePath         String?
+  deviceResolution String?
+  productID        String?
+  product          Product?  @relation(fields: [productID], references: [id])
+}
+
+enum PageType {
+  MAIN
+  LIST
+  PRODUCT
+}
+
+// ---------------------- USER MANAGEMENT SECTION ---------------------- 
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model User {
+  id             String    @id @default(uuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  hashedPassword String?
+  image          String?
+  accounts       Account[]
+}
